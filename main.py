@@ -24,7 +24,7 @@ These kinds of insights are extremely valuable and this dataset provides us with
 df = pd.read_csv('insurance.csv')
 df.drop(columns='index',inplace= True)
 st.dataframe(df)
-st.download_button('Get Data',data =df.to_csv(),file_name='insurance.csv')
+st.download_button(label='Get Data',data =df.to_csv(),file_name='insurance.csv')
 st.divider()
 
 st.header('Basic Feature Engineering')
@@ -105,6 +105,8 @@ df['categorize_claim'] = df['claim'].apply(categorize_claim)
 """)
 
 # Basic Feature Engineering
+
+df.dropna(inplace= True)
 def categorize_age(age):
 
   try:
@@ -187,29 +189,37 @@ def go_analysis_1():
   fig.update_layout(yaxis = dict(title = 'claim amount'))
 
   st.plotly_chart(fig)
-  st.text("""- Typically, individuals from the south-east region make the highest number of insurance claims(total 5.78 M USD), and they also tend to claim larger
-  amounts as comparsion to the others.""")
-  st.text("""- After south-east, individuals from the north-west region make the highest number of claims(total 4.06 M USD) from insurance companies.""")
+  st.text("""- Typically, individuals from the south-east region make the highest 
+  number of insurance claims(total 5.78 M USD), and they also tend to 
+  claim larger amounts as comparsion to the others.
+- After south-east, individuals from the north-west region make the 
+  highest number of claims(total 4.06 M USD) from insurance companies.""")
 
+  col1 ,col2 = st.columns(2)
+  with col1:
+    fig = px.pie(temp, values='claim_amount', names='region', hover_name='region', hole=0.5,title=' Region Contribution in Total Claim Amount')
+    st.plotly_chart(fig)
+    st.text("""- Out of the total claim amount 32.6% amount only goes to south-east region.""")
 
-  fig = px.pie(temp, values='claim_amount', names='region', hover_name='region', hole=0.5,title=' Region Contribution in Total Claim Amount')
-  st.plotly_chart(fig)
-  st.text("""- Out of the total claim amount 32.6% amount only goes to south-east region.""")
+  with col2:
+    temp2 = df[df['categorize_claim'] == 'higher']['region'].value_counts().reset_index()
+    fig = px.pie(temp2, values='count',names='region',hover_name = 'region',hole = 0.5,title ='Region contribution in Higher Claim Amounts ')
+    st.plotly_chart(fig)
+    st.text("""- Out of the total higher claim amount 33.6% amount only goes to south-east 
+  region.""")
 
+  col1,col2 = st.columns(2)
+  with col1:
+    fig = px.scatter(df, y='region', x='claim', color='region', hover_name='claim',title='Number of Claims Over Different Regions')
+    st.plotly_chart(fig)
+    st.text("""- The density of scatter bubbles is higher in the Southeast region.""")
 
-  temp2 = df[df['categorize_claim'] == 'higher']['region'].value_counts().reset_index()
-  fig = px.pie(temp2, values='count',names='region',hover_name = 'region',hole = 0.5,title ='Region contribution in Higher Claim Amounts ')
-  st.plotly_chart(fig)
-  st.text("""- Out of the total higher claim amounts 33.4% amount only goes to south-east region.""")
-
-  fig = px.scatter(df, y='region', x='claim', color='region', hover_name='claim',title='Number of Claims Over Different Regions')
-  st.plotly_chart(fig)
-  st.text("""- The density of scatter bubbles is higher in the Southeast region.""")
-
-  temp = df.groupby('region')['claim'].count().reset_index().rename(columns={'claim': 'count'})
-  fig = px.pie(temp, values='count', names='region', hover_name='region', hole=0.5, title='Region Contribution in Total Number of Claims')
-  st.plotly_chart(fig)
-  st.text("""- Out of the total number of claims 33.1% claims only goes to people of south-east region """)
+  with col2:
+    temp = df.groupby('region')['claim'].count().reset_index().rename(columns={'claim': 'count'})
+    fig = px.pie(temp, values='count', names='region', hover_name='region', hole=0.5, title='Region Contribution in Total Number of Claims')
+    st.plotly_chart(fig)
+    st.text("""- Out of the total number of claims 33.2% claims only goes to people of south-east 
+  region """)
 
   st.subheader("Why are the majority of claims from the 'South-East' region of the USA?")
 
@@ -233,19 +243,23 @@ def go_analysis_2():
     st.dataframe(temp)
 
     st.text("""
-1. These regions also have the highest number of insurance claims, often for significant amounts as from previous analysis.
+1. South-east region have the highest number of insurance claims, often for significant amounts as from previous analysis.
 2. Maybe there is a possibility that female population claims the most. Is it ?
 3. The answer is No""")
 
 def go_analysis_3():
     st.text("""1. Males apply for insurance amounts more frequently compared to females.
-2. Of the total claims, 50.6% were made by males, while 49.4% were made by females.
+2. Of the total claims, 50.3% were made by males, while 49.7% were made by females.
 3. Not a huge difference.""")
 
     temp = df.groupby('gender')['claim'].count().reset_index().rename(columns={'claim':'claim_count'})
     st.dataframe(temp)
-    fig = px.pie(temp, values='claim_count',names='gender',hover_name = 'gender',hole = 0.5,title='Claim Distribution over Gender')
+    fig = px.pie(temp, values='claim_count',names='gender',hover_name = 'gender',hole = 0.5,title='Claim Distribution over Gender',color_discrete_map={'male':'red','female':'green'} )
     st.plotly_chart(fig)
+
+    fig  = px.box(df, y='claim', color='gender',title='Claim Distribution over Gender', color_discrete_map={'male':'red','female':'green'} )
+    st.plotly_chart(fig)
+    st.text("""- A wider box (i.e males) indicate a higher density of data points within that range.""")
 
     st.subheader("Why majority of claims are done by males than rather females?")
 
@@ -270,6 +284,7 @@ def go_analysis_4():
     st.dataframe(temp)
 
     fig = px.bar(temp, x='categorize_age', y='claim', text_auto=True, title='Claim Distribution over Age',color='categorize_age')
+    fig.update_layout(xaxis = dict(title = 'age category'))
     st.plotly_chart(fig)
     st.text("""- Young people that aged between 18 and 29 years claim the most(4.91 Million USD ), while those aged between 51-60 years claim the least(2.44 Million USD)""")
 
@@ -278,7 +293,7 @@ def go_analysis_4():
     st.text("""- The scatter plot reveals that bubbles corresponding to younger age categories exhibit the highest density""")
 
     st.subheader("""Why do young people takes most number of claims ?""")
-    st.text("""By Analysing Data""")
+    st.text("""(By Analysing Data)""")
     st.text("""- The significant portion of the young population resides in the south-east region, which is renowned for its elevated total claim amounts.""")
 
     st.text("(By Google)")
@@ -305,20 +320,20 @@ def go_analysis_4():
 def  go_analysis_5():
     st.text(""" 
     1. More Females have diabetes than Males
-    2. 50.31 % of females are diabetic while 49.69 % of male are diabetic""")
+    2. 50.71 % of females are diabetic while 49.29 % of male are diabetic""")
 
     temp2 = pd.crosstab(df['diabetic'], df['gender'])
 
     temp = (pd.crosstab(df['diabetic'], df['gender'], normalize='index') * 100).round(2)
     st.dataframe(temp)
 
-    fig = px.bar(temp2, x=temp.index, y=temp.columns, text_auto=True, title='Diabetic population vs gender',barmode='stack')
+    fig = px.bar(temp2, x=temp.index, y=temp.columns, text_auto=True, title='Diabetic population vs gender',barmode='stack',color_discrete_map= {'female':'#FD8A8A', 'male':'#F1F7B5'})
     fig.update_layout(bargap=0.5)
     st.plotly_chart(fig)
 
-    st.text("""- Individuals without diabetes claim a higher total amount of insurance(9.32 M USD) compared to individuals with diabetes, who claim 8.43 M USD""")
+    st.text("""- Individuals without diabetes claim a higher total amount of insurance(9.31 M USD) compared to individuals with diabetes, who claim 8.43 M USD""")
     temp = df.groupby('diabetic')['claim'].sum().reset_index()
-    fig = px.bar(temp, y='claim', x='diabetic', text_auto=True, title='Claim Amount Vs Diabetic', color='diabetic')
+    fig = px.bar(temp, y='claim', x='diabetic', text_auto=True, title='Claim Amount Vs Diabetic', color='diabetic',color_discrete_map= {'No':'#FAEDCB','Yes':'#C6DEF1'})
     fig.update_layout(bargap=0.5)
     st.plotly_chart(fig)
 
@@ -337,31 +352,160 @@ def  go_analysis_5():
     fig = px.bar(temp, x='diabetic', y='count', color='categorize_age', facet_col='region',title='Diabetic vs Number of Claims based on age over different region')
     st.plotly_chart(fig)
 
+def go_analysis_6():
+
+   st.write("- Let's explore this relationship through exploratory data analysis (EDA)")
+   st.text("- There is a no significant realtionship that people who are diabetic also have Elevated or High blood-pressure levels.")
+   temp = df.groupby(['diabetic', 'categorize_bp'])['claim'].count().sort_values(ascending=False).reset_index().rename(columns={'claim': 'count'})
+   st.dataframe(temp)
+
+   st.text("""- Normal blood pressure + Non-diabetic : claims -> (8.09 M USD)
+- Normal blood pressure + Diabetic : claims -> (7.04 M USD) then comes the rest. """)
+
+   temp = df.groupby(['diabetic','categorize_bp'])['claim'].sum().sort_values(ascending = False).reset_index()
+   st.dataframe(temp)
+
+def go_analysis_7():
+
+    st.write("- Let's explore this relationship through exploratory data analysis (EDA)")
+    st.text(""" - Generally, individuals with no children claim the highest amount (7.09 million USD), then
+- 1 child (4.12 M USD)
+- 2 children (3.61 M USD)
+- 3 children (2.14 M USD)
+- 4 children (346.26k USD)
+- 5 children (158.14k USD) """)
+
+    temp = df.groupby('children')['claim'].sum().sort_values(ascending=False).reset_index().round(2)
+    fig = px.bar(temp, x='children', y='claim', title='Claim Amount vs. Number of Children', text_auto=True, color='children',color_continuous_scale='Viridis')
+    fig.update_layout(bargap=0.2)
+    st.plotly_chart(fig)
+
+    st.markdown("**What factors contribute to this relationship?**")
+    st.text("(By Analysing Data)")
+    st.text("The majority of individuals having 0, 1, 2, or 3 children are from the Southeast region, where claim rates are known to be highest")
+
+    temp = (pd.crosstab(df['children'], df['region'], normalize='index') * 100).round(2)
+    st.dataframe(temp)
+
+    st.text("""
+- 32.57% of people that have 0 child belongs to south-east.
+- 35.19% of people that have 1 child belongs to south-east.
+- 33.33% of people that have 2 child belongs to south-east.
+- 31.21% of people that have 3 child belongs to south-east.
+    
+    """)
+    fig = px.imshow(temp, color_continuous_scale='Viridis', text_auto=True)
+    fig.update_layout(xaxis=dict(title='region'), yaxis=dict(title='chilren'))
+    st.plotly_chart(fig)
+
+    st.text("(By Google)")
+    st.markdown("""
+    **1. Healthcare Needs and Utilization:** Individuals or couples without children may have higher healthcare needs and utilization due to factors such as 
+    aging, pre-existing health conditions, or lifestyle choices. They may be more likely to seek medical care and treatment for themselves, leading to higher health 
+    insurance claims.
+
+    **2. Age and Health Status:** As mentioned earlier, individuals without children may be older on average, and older age is associated with higher healthcare
+     needs and utilization. Older individuals are more likely to have chronic health conditions and require medical treatment, resulting in higher healthcare costs.
+    """)
+
+def go_analysis_8():
+
+    st.write("- Let's explore this relationship through exploratory data analysis (EDA)")
+    st.text("""- The total amount claimed by non-smokers(8.96 M USD) is generally greater than that claimed by smokers(8.78 M USD).)
+- The amount gap is not of concern as there is no such huge gap.""")
+
+    temp= df.groupby('smoker')['claim'].sum().reset_index().rename(columns={'claim':'claim_amount'})
+    fig = px.bar(temp, x ='smoker',y='claim_amount',title ='Claim Amount Vs Smoker' ,text_auto = True,color='smoker',color_discrete_map= {'No':'#FD8A8A','Yes':'#F1F7B5'})
+    fig.update_layout(bargap = 0.5)
+    st.plotly_chart(fig)
+
+    st.text("- More Male smoker population(58.03%) as comparsion to Female smoker(41.97%).")
+    temp = (pd.crosstab(df['smoker'], df['gender'], normalize='index') * 100).round(2)
+    st.dataframe(temp)
+
+    st.divider()
+    st.markdown("From this we can conclude that **Male non-smoker and Female smoker** claim the lowest.")
+    temp = df.groupby(['smoker', 'gender'])['claim'].sum().sort_values(ascending=False).reset_index()
+    st.dataframe(temp)
+    st.text("""Specifically:
+- Male smokers claim the highest amount, totaling 5.25 million USD.
+- Female smokers claim the lowest amount, totaling 3.52 million USD.
+- Male non-smokers follow, with a total claim amount of 4.17 million USD.
+- Female non-smokers come next, with a total claim amount of 4.79 million USD.""")
 
 
+def go_analysis_9():
+    st.text("""- In terms of insurance claims, individuals classified as obese present the highest total, amounting to 10.98M USD.
+- Overweight individuals : 4.27M USD.
+- Normal-weight individuals : 2.3M USD.
+- Underweight individuals : 177k USD.""")
 
+    temp = df.groupby('categorize_bmi')['claim'].sum().sort_values(ascending=False).reset_index().rename(columns={'categorize_bmi': 'category'})
+    fig = px.bar(temp,x='category', y='claim',text_auto = True,title ='Claim Amount vs BMI Classification',color='category')
+    fig.update_layout(bargap = 0.2)
+    st.plotly_chart(fig)
 
+    col1,col2 = st.columns(2)
+    with col1:
+       fig = px.scatter(df,x='bmi',y='claim',title=' Claim Amount vs BMI', color='categorize_bmi',hover_name ='claim')
+       st.plotly_chart(fig)
 
+    with col2:
+       fig = px.scatter(df,x='bmi',y='claim',title=' Claim Amount Count vs BMI',facet_col= 'categorize_bmi',hover_name ='claim')
+       st.plotly_chart(fig)
 
+    st.markdown(""" - The density of scatter plot bubbles indicates that not only do **obese individuals tend to file more insurance claims in terms of quantity**,
+but they also **claim higher amounts compared to others.**""")
+    st.divider()
 
+def go_analysis_10():
 
+    st.text("""- Generally, individuals with normal blood pressure (less than 120) tend to make more number of insurance claims (21x) as compared to those under 
+elevated and hyper-tension blood pressure category.""")
+    temp = df.groupby('categorize_bp')['claim'].count().reset_index().rename(columns={'claim': 'count'})
+    st.dataframe(temp)
 
+    st.text("- Out of the total number of insurance claims 95.6% goes to people with normal blood pressure.")
+    fig = px.pie(temp,values='count',labels ='categorize_bp',hover_name = 'categorize_bp',title = 'Claim amount distribution over Blood pressure category')
+    st.plotly_chart(fig)
 
+    st.text("- Insurance claims totaling 15.5 M USD are paid to individuals with normal blood pressure.")
+    st.text("- Combined Insurance claims totaling 2.23 M USD are paid to individuals with elevated and high blood pressure.")
 
+    temp = df.groupby('categorize_bp')['claim'].sum().reset_index().rename(columns={'claim': 'claim_amount'})
+    fig = px.bar(temp,y = 'claim_amount',x ='categorize_bp',color='categorize_bp',text_auto = True,title = 'Claim amount distribution over Blood Pressure category')
+    st.plotly_chart(fig)
 
+    st.text("""- However, despite the higher frequency of claims from individuals with normal blood pressure, the individual insurance amount claimed by a single person in 
+the hypertension or elevated blood pressure category is greater than that claimed by a single person in the normal blood pressure category.""")
 
+    fig = px.scatter(df, x='claim',y = 'bloodpressure',color='categorize_bp',hover_name = 'claim',title ='Blood pressure category vs Claim amount')
+    fig.update_layout(width=1000, height=500)
+    st.plotly_chart(fig)
 
+def go_analysis_11():
 
+    st.text("(It is strange but after Analysing Data)")
 
+    st.markdown("""**1. Normal Blood Pressure** : In cases of obesity and overweight, the majority of individuals fall under the Normal blood pressure category,
+which also coincides with our observation that individuals in the **normal blood pressure category tend to make the most claims.**""")
+    temp = (pd.crosstab(df['categorize_bmi'],df['categorize_bp'],normalize = 'index')*100).round(2)
+    st.dataframe(temp)
 
+    st.markdown("""**2. Non-Diabetic:** In cases of obesity and overweight, the majority of individuals fall under the Non-Diabetic category, which also  coincides 
+with our observation that individuals with **no diabetes tend to make the most claims.**""")
+    temp = (pd.crosstab(df['categorize_bmi'],df['diabetic'],normalize = 'index')*100).round(2)
+    st.dataframe(temp)
 
+    st.markdown("""**3. Young Individuals:** In cases of obesity and overweight, the majority of individuals fall under the Young category, which also coincides 
+with our observation that **young individuals tend to make the most claims.**""")
+    temp = (pd.crosstab(df['categorize_bmi'],df['categorize_age'],normalize = 'index')*100).round(2)
+    st.dataframe(temp)
 
-
-
-
-
-
-
+    st.markdown("""**4. Non-Smoker:** In cases of obesity and overweight, the majority of individuals fall under the Non-Smoking category, which also coincides 
+with our observation that **non-smokers tend to make the most claims.**""")
+    temp = (pd.crosstab(df['categorize_bmi'], df['smoker'], normalize='index')*100).round(2)
+    st.dataframe(temp)
 
 
 
@@ -369,31 +513,75 @@ st.subheader(""" 1. We can conduct an analysis to determine the geographical reg
 btn =  st.button('Get Analysis', key='go_button_1')
 if btn:
     go_analysis_1()
-
 st.divider()
+
 
 st.subheader("""2. After Analysing it is found that in south-east and south-west regions, there is a higher proportion of females compared to other regions""")
 btn = st.button('Get Analysis', key='go_button_2')
 if btn:
     go_analysis_2()
-
 st.divider()
+
 
 st.subheader("""3. We'll analyze whether males or females file the majority of insurance claims and delve into the reasons behind this phenomenon""")
 btn = st.button('Get Analysis', key='go_button_3')
 if btn:
     go_analysis_3()
-
 st.divider()
+
 
 st.subheader("""4. We will explore the relationship between the number of insurance claims and age, identifying the age groups that most frequently submit claims and examining the corresponding claim amounts""")
 btn = st.button('Get Analysis', key = 'go_button_4')
 if btn:
     go_analysis_4()
-
 st.divider()
+
 
 st.subheader("""5. We will investigate whether individuals with diabetes or without diabetes file the highest number of insurance claims, and delve into the underlying factors contributing to this trend""")
 btn = st.button('Get Analysis', key = 'go_button_5')
 if btn:
     go_analysis_5()
+st.divider()
+
+
+st.subheader("6. Is there a correlation between blood pressure levels, diabetes, and insurance claims?")
+btn = st.button('Get Analysis',key = 'go_button_6')
+if btn:
+    go_analysis_6()
+st.divider()
+
+
+st.subheader("7. Is there a relationship between the number of children individuals have and the amount of insurance claims they file? ")
+btn = st.button('Get Analysis',key = 'go_button_7')
+if btn:
+    go_analysis_7()
+st.divider()
+
+
+st.subheader("8. We can analyze whether smokers or non-smokers make the most insurance claims and investigate the reasons behind it.")
+btn = st.button('Get Analysis',key = 'go_button_8')
+if btn:
+    go_analysis_8()
+st.divider()
+
+
+st.subheader("9. We can analyze is there any relationship b/w individuals with higher BMI and insurance claims.")
+btn = st.button('Get Analysis',key = 'go_button_9')
+if btn:
+    go_analysis_9()
+st.divider()
+
+
+st.subheader("10. Is there a correlation between blood pressure levels and insurance claims?")
+btn = st.button('Get Analysis',key = 'go_button_10')
+if btn:
+    go_analysis_10()
+st.divider()
+
+
+st.subheader("11. What are the reasons that why individuals with higher BMI make the most insurance claims?")
+btn = st.button('Get Analysis',key = 'go_button_11')
+if btn:
+    go_analysis_11()
+st.divider()
+
