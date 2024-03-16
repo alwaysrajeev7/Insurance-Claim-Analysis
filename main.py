@@ -889,9 +889,12 @@ btn2 = st.button('On Numerical Columns',key = 'go_button_14')
 if btn2:
     go_numerical_univariate_analysis()
 
-# Your Streamlit app content here
 
-st.markdown("""
+
+import streamlit as st
+
+# Custom CSS for footer
+footer_style = """
     <style>
         .footer {
             position: fixed;
@@ -912,18 +915,27 @@ st.markdown("""
             align-items: center;
             text-decoration: none;
             color: #000000;
+            margin-bottom: 5px;
         }
         .footer a img {
             margin-right: 5px;
         }
     </style>
-""", unsafe_allow_html=True)
+"""
 
-st.markdown("""
+# Footer content
+footer_content = """
     <div class="footer">
         <p>Made with ❤️ by Rajeev Nayan Tripathi</p>
         <a href="https://www.linkedin.com/in/rajeev-nayan-tripathi-1499581b7/" target="_blank">
-            <img src="https://img.icons8.com/color/48/000000/linkedin.png"/> LinkedIn Profile
+            <img src="https://img.icons8.com/color/48/000000/linkedin.png"/>
+        </a>
+        <a href="mailto:rajeevnayantripathi36@gmail.com" target="_blank">
+            <img src="https://img.icons8.com/color/48/000000/gmail--v1.png"/>
         </a>
     </div>
-""", unsafe_allow_html=True)
+"""
+
+# Display the footer
+st.markdown(footer_style, unsafe_allow_html=True)
+st.markdown(footer_content, unsafe_allow_html=True)
