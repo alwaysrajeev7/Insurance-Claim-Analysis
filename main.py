@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import seaborn as sns
 import streamlit as st
+import scipy
 
 
 st.set_page_config(layout='wide',page_title='Insurance Claim Analysis', page_icon=':chart_with_upwards_trend:')
@@ -456,7 +457,6 @@ def go_analysis_9():
 
     st.markdown(""" - The density of scatter plot bubbles indicates that not only do **obese individuals tend to file more insurance claims in terms of quantity**,
 but they also **claim higher amounts compared to others.**""")
-    st.divider()
 
 def go_analysis_10():
 
@@ -507,12 +507,304 @@ with our observation that **non-smokers tend to make the most claims.**""")
     temp = (pd.crosstab(df['categorize_bmi'], df['smoker'], normalize='index')*100).round(2)
     st.dataframe(temp)
 
+def go_analysis_12():
+
+    st.text("- We have a significantly higher proportion of young males, at a ratio of 2.38 times compared to young females.")
+    temp = pd.crosstab(df['gender'], df['categorize_age'])
+    st.dataframe(temp)
+
+    st.text("""- Additionally, from previous analysis, we've discovered that young individuals make the most claims, and now among them, males submit the 
+highest number of claims.""")
+    temp = df[df['categorize_age'] == 'young']
+    fig = px.scatter(temp,x='age',y='claim',color='gender',title = 'Claim distribution among Young individuals by gender',color_discrete_map= {'male':'blue','female':'red'})
+    st.plotly_chart(fig)
+
+def  go_categorical_univariate_analysis():
+
+     st.subheader("1. gender")
+     st.text("""- Male -> 50.3 % and Female -> 49.7%
+- Not a huge gap is shown between male/female population.
+- No missing values""")
+     temp = df['gender'].value_counts().reset_index().rename(columns={'count': 'population'})
+
+     col1,col2 = st.columns(2)
+     with col1:
+       fig = px.pie(temp,values='population',names='gender',hole = 0.5,title='Gender Contribution in Total Population',hover_name = 'gender',
+                    color='gender',color_discrete_map= {'male':'#FAD1FA','female':'#BDB2FF'})
+       st.plotly_chart(fig)
+
+     with col2:
+       fig = px.bar(temp, x='gender', y='population', title='Population vs Gender Analysis',text_auto=True,color= 'gender',
+                    color_discrete_map= {'male':'#FAD1FA','female':'#BDB2FF'} )
+       fig.update_layout(xaxis=dict(title='Gender'), yaxis=dict(title='Population'), bargap=0.6)
+       st.plotly_chart(fig)
+
+     st.divider()
+
+     st.subheader("2. diabetic")
+     st.text("""- Diabetic -> 47.8% 
+- Non-Diabetic ->52.2%
+- No missig values""")
+     temp = df['diabetic'].value_counts().reset_index()
+
+     col1,col2 = st.columns(2)
+     with col1:
+
+       fig = px.pie(temp,values='count',names='diabetic',hole = 0.5,title='Diabetic vs Non-diabetic in Total Population',hover_name = 'diabetic',
+                    color='diabetic',color_discrete_map= {'No':'#FD8A8A','Yes':'#F1F7B5'})
+       st.plotly_chart(fig)
+
+     with col2:
+      fig = px.bar(temp, x='diabetic', y='count', color='diabetic', title='Diabetic vs Non-diabetic Population',text_auto=True, color_discrete_map= {'No':'#FD8A8A','Yes':'#F1F7B5'})
+      fig.update_layout(xaxis=dict(title='Diabetic'), yaxis=dict(title='Population'), bargap=0.6)
+      st.plotly_chart(fig)
+
+     st.divider()
+
+     st.subheader("3. children")
+     st.text("""How many chilren
+-> 0 -> 42.6%
+-> 1 -> 24.3%
+-> 2 -> 18.0%
+-> 3 -> 11.8%
+-> 4 -> 1.88%
+-> 5 -> 1.35%
+- No missing values""")
+
+     temp = df['children'].value_counts().reset_index()
+
+     col1,col2 = st.columns(2)
+     with col1:
+       fig = px.pie(temp,values='count',names='children',hole = 0.5,title= 'Distribution of the population based on the number of children they have',
+                      color='children', hover_name = 'children')
+       st.plotly_chart(fig)
+
+     with col2:
+       fig = px.bar(temp, x='children', y='count', color='children',title='Population Distribution by Number of Children', text_auto=True, color_continuous_scale= 'Viridis')
+       fig.update_layout(xaxis=dict(title=' No. of Children'), yaxis=dict(title='Count'))
+       st.plotly_chart(fig)
+
+     st.divider()
+
+     st.subheader("4. smoker")
+     st.text("""- 20.6 % -> Smoker
+- 79.4 % -> Non Smoker
+- No missing values.""")
+
+     temp = df['smoker'].value_counts().reset_index()
+     st.dataframe(temp)
+
+     col1,col2 = st.columns(2)
+
+     with col1:
+         fig = px.pie(temp, values='count', names='smoker', hole=0.5, title='Smoker Population Distribution',hover_name='smoker',
+                      color='smoker', color_discrete_map={'No':'blue','Yes':'red'})
+         st.plotly_chart(fig)
+
+     with col2:
+         fig = px.bar(temp, x='smoker', y='count', color='smoker', title='Smoker Population Distribution',text_auto=True,color_discrete_map={'No':'blue','Yes':'red'})
+         fig.update_layout(xaxis=dict(title=' smoker'), yaxis=dict(title='Count'), bargap=0.6)
+         st.plotly_chart(fig)
+
+     st.divider()
+
+     st.subheader("5. region")
+     st.text("""- The majority of population come from the Southeast, followed by the Northwest, Southwest, and then Northeast.
+- No missing values.""")
+
+     col1,col2 = st.columns(2)
+     with col1:
+       temp = df['region'].value_counts().reset_index()
+       fig = px.pie(temp,values='count',names='region',hole = 0.5,title='Population Distribution by Region',hover_name = 'region')
+       st.plotly_chart(fig)
+
+     with col2:
+         fig = px.bar(temp, x='region', y='count', color='region', title='Population Distribution by Region',text_auto=True)
+         fig.update_layout(xaxis=dict(title='Region'), yaxis=dict(title='Count'))
+         st.plotly_chart(fig)
+
+     st.divider()
+
+     st.subheader("6. categorize_bmi")
+     st.text("""- 52.7 % are under obsesity
+- 29.1 % are under over-weight
+- 16.7 % are under normal-weight
+- 1.5 % are under under-weight""")
+
+     temp = df['categorize_bmi'].value_counts().sort_values(ascending=False).reset_index()#.rename(columns={'index': 'category', 'categorize_bmi': 'bmi'})
+     st.dataframe(temp)
+     fig = px.pie(temp, values='count', names='categorize_bmi', hover_name='categorize_bmi', hole=0.5,title='Population distribution in BMI Categories')
+     st.plotly_chart(fig)
+
+
+def  go_numerical_univariate_analysis():
+     st.subheader("1. age")
+     st.text("""- min. age -> 18 yr
+- mean age -> 38 yr
+- max. age -> 60 yr
+- No skewness
+- Bi-modal Distribution
+- No missing values""")
+     st.dataframe(df['age'].describe())
+
+     col1,col2 = st.columns(2)
+     with col1:
+       st.markdown('**- Mostly people are from age 26-49yr**')
+       fig = px.histogram(df,x='age',nbins=40,text_auto = True)
+       st.plotly_chart(fig)
+
+
+     with col2:
+       st.markdown('**- No outliers**')
+       fig = px.box(df, x='age', color_discrete_sequence=['green'])
+       st.plotly_chart(fig)
+
+
+     temp = df['categorize_age'].value_counts().reset_index()
+     st.dataframe(temp)
+     col1,col2 = st.columns(2)
+
+     with col1:
+       fig = px.pie(temp, values='count', names='categorize_age', hover_name='categorize_age', hole=0.5, color = 'categorize_age',
+                    color_discrete_map={'young': '#ff0303', "30's-35's": '#8400ff', "46's-50's": '#00fff6',
+                                        "41's-45's": '#0028ff', "36's-40's": '#00ff28', "56's-60's": '#f1802d',
+                                        "51's-55's": '#549aab'}, title='Population distribution in Age Categories')
+       st.plotly_chart(fig)
+       st.markdown("**- Majority of population is of Young people**")
+
+     with col2:
+         fig = px.histogram(df, x='age', text_auto=True, color='categorize_age', title = 'Age category density',
+                            color_discrete_map={'young': '#ff0303', "30's-35's": '#8400ff', "46's-50's": '#00fff6',
+                                                "41's-45's": '#0028ff', "36's-40's": '#00ff28', "56's-60's": '#f1802d',
+                                                "51's-55's": '#549aab'})
+         st.plotly_chart(fig)
+
+
+     st.divider()
+
+
+     st.subheader("2. bmi")
+     st.text("""- avg. bmi - 30.65
+- min. bmi - 16
+- Normal Distribution
+- No skewness
+- No missing values """)
+     st.dataframe(df['bmi'].describe())
+
+     st.markdown("**- Mostly people have bmi from 25.5 - 33.5**")
+     fig = px.histogram(df, x='bmi', nbins=40, text_auto=True,height=500,width=1000)
+     st.plotly_chart(fig)
+
+     st.markdown("**- Outliers**")
+     fig = px.box(df,x='bmi',color_discrete_sequence = ['green'])
+     st.plotly_chart(fig)
+
+     st.markdown("**- Outliers are there but they are valid**")
+     st.dataframe(df[df['bmi']>=47.7])
+
+     temp = df['categorize_bmi'].value_counts().sort_values(ascending=False).reset_index()
+
+     col1,col2 = st.columns(2)
+
+     with col1:
+       fig = px.pie(temp, values='count', names='categorize_bmi', hover_name='categorize_bmi', hole=0.5, color = 'categorize_bmi',
+                    title='Population distribution in BMI Categories',color_discrete_map={'obesity': '#e9724d', 'normal-weight': '#d6d727', 'overweight': '#92cad1',
+                                        'under-weight': '#79ccb3'} )
+       st.plotly_chart(fig)
+
+       st.text("""- 52.7 % are under obsesity
+- 29.1 % are under over-weight
+- 16.7 % are under normal-weight
+- 1.5 % are under under-weight""")
+
+
+     with col2:
+         fig = px.histogram(df, x='bmi', text_auto=True, color='categorize_bmi', title = 'BMI category density',
+                            color_discrete_map= {'obesity':'#e9724d', 'normal-weight':'#d6d727','overweight':'#92cad1','under-weight':'#79ccb3'})
+         st.plotly_chart(fig)
+
+     st.divider()
+
+     st.subheader("3. bloodpressure")
+     st.text(""" - postively skewed
+- no missing values """)
+
+     st.dataframe(df['bloodpressure'].describe())
+
+     st.markdown('**- mostly people have bloodpressure from 80-101**')
+     fig = px.histogram(df,x='bloodpressure',nbins = 40,text_auto = True,height=500,width=1000)
+     st.plotly_chart(fig)
+
+     st.markdown('**- Outliers**')
+     st.plotly_chart(px.box(df,x='bloodpressure'))
+
+     st.markdown("**- Outliers are there but they are valid**")
+     st.dataframe(df[df['bloodpressure']>=119])
+
+     col1,col2 = st.columns(2)
+     with col1:
+       temp = df['categorize_bp'].value_counts().reset_index()
+       fig = px.pie(temp, values='count', names='categorize_bp', hover_name='categorize_bp', hole=0.5,title='Population distribution in Blood Pressure Categories')
+       st.plotly_chart(fig)
+       st.text("""- 95.6 % of population is in Normal Blood Pressure Category
+- 2.25 % of population is in Elevated Blood Pressure Category
+- 2.18 % of population is in Hypertension Blood Pressure Category""")
+
+     with col2:
+         fig = px.histogram(df, x='bloodpressure', color='categorize_bp', text_auto=True,title = 'Bloodpressure category density')
+         st.plotly_chart(fig)
+
+     st.divider()
+
+     st.subheader("4. claim")
+     st.text("""- avg. claim : 13325
+- No missing values""")
+
+     st.dataframe(df['claim'].describe())
+
+     st.markdown('**- Highest claim is from someone of southeast region**')
+     st.markdown('**- We also knew that people from southeast region claims the most times**')
+     st.dataframe(df[df['claim'] == df['claim'].max()])
+
+     st.markdown('**- Lowest claim is from someone of southeast region**')
+     st.dataframe(df[df['claim'] == df['claim'].min()])
+
+     st.markdown('**- Majority of claims are from 0-14k**')
+     st.plotly_chart(px.histogram(df, x='claim',nbins = 50,text_auto = True))
+
+     st.markdown('**Outliers**')
+     st.plotly_chart(px.box(df,x='claim'))
+
+     st.markdown('**- Outliers are there but they are valid**')
+     st.dataframe(df[df['claim']>=35000])
+
+     temp = df['categorize_claim'].value_counts().reset_index()
+     col1,col2 = st.columns(2)
+
+     with col1:
+         fig = px.pie(temp, values='count', names='categorize_claim', hole=0.5, title='Claim category distribution',color = 'categorize_claim',
+                      color_discrete_map= {'mid':'red','lower':'green','higher':'yellow'})
+         st.plotly_chart(fig)
+
+     with col2:
+         fig = px.histogram(df, x='claim', color='categorize_claim', text_auto=True,title='Claim category density ',
+                            color_discrete_map= {'mid':'red','lower':'green','higher':'yellow'})
+         st.plotly_chart(fig)
+
+
+
+
+
+
+
 
 
 st.subheader(""" 1. We can conduct an analysis to determine the geographical region whose residents file the highest volume of insurance claims, and delve into the underlying factors that drive this prevailing trend""")
 btn =  st.button('Get Analysis', key='go_button_1')
 if btn:
+    st.balloons()
     go_analysis_1()
+
 st.divider()
 
 
@@ -585,3 +877,57 @@ if btn:
     go_analysis_11()
 st.divider()
 
+st.subheader("12. Within the group of young people, how does the number of claims vary between males and females ?")
+btn = st.button('Get Analysis',key = 'go_button_12')
+if btn:
+    go_analysis_12()
+st.divider()
+
+st.title('Uni-Variate Analysis')
+
+btn1 = st.button('On Categorical Columns',key = 'go_button_13')
+if btn1:
+    go_categorical_univariate_analysis()
+
+btn2 = st.button('On Numerical Columns',key = 'go_button_14')
+if btn2:
+    go_numerical_univariate_analysis()
+
+# Your Streamlit app content here
+
+st.markdown("""
+    <style>
+        .footer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            text-decoration: none;
+            color: #000000;
+        }
+        .footer p {
+            margin: 0;
+            font-size: 14px;
+        }
+        .footer a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #000000;
+        }
+        .footer a img {
+            margin-right: 5px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+    <div class="footer">
+        <p>Made with ❤️ by Rajeev Nayan Tripathi</p>
+        <a href="https://www.linkedin.com/in/rajeev-nayan-tripathi-1499581b7/" target="_blank">
+            <img src="https://img.icons8.com/color/48/000000/linkedin.png"/> LinkedIn Profile
+        </a>
+    </div>
+""", unsafe_allow_html=True)
