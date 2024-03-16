@@ -1,10 +1,6 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import plotly.express as px
-import seaborn as sns
 import streamlit as st
-import scipy
-
 
 st.set_page_config(layout='wide',page_title='Insurance Claim Analysis', page_icon=':chart_with_upwards_trend:')
 st.markdown(""" <style>
